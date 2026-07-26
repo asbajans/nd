@@ -1,0 +1,25 @@
+name: Build & Deploy
+on:
+  push:
+    branches: [nd]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - run: npm install
+
+      - name: Build Next.js
+        env:
+          NEXT_PUBLIC_SITE_URL: https://nakliyatdiyari.com
+        run: npm run build 2>&1
+
+      - name: Build Docker image
+        run: docker build -t nakliyat-diyari:latest . 2>&1

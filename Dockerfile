@@ -1,14 +1,16 @@
 FROM node:18-alpine AS base
+RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
 FROM base AS deps
-COPY package.json package-lock.json* pnpm-lock.yaml* ./
-RUN npm install
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run build
+ENV NEXT_PUBLIC_SITE_URL=https://nakliyatdiyari.com
+RUN pnpm run build
 
 FROM base AS runner
 WORKDIR /app
