@@ -61,7 +61,7 @@ export function ListingManager({ listings }: { listings: Listing[] }) {
                   <Badge className={status.className}>{status.label}</Badge>
                 </div>
                 <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-                  {l.fromCity} <ArrowRight className="h-3 w-3" /> {l.toCity} · {l.vehicleType}
+                  {l.fromCity} <ArrowRight className="h-3 w-3" /> {l.toCity} · {l.vehicleTypes?.split(",").filter(Boolean).join(", ") || "—"}
                   {l.price ? ` · ${l.price.toLocaleString("tr-TR")} ₺` : ""}
                 </p>
                 <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">{l.description}</p>

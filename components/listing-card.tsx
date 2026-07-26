@@ -24,9 +24,13 @@ export function ListingCard({ listing }: { listing: Listing }) {
             <Truck className="h-12 w-12" />
           </div>
         )}
-        <Badge className="absolute left-3 top-3 bg-accent text-accent-foreground hover:bg-accent">
-          {listing.vehicleType}
-        </Badge>
+        <div className="absolute left-3 top-3 flex flex-wrap gap-1">
+          {(listing.vehicleTypes ? listing.vehicleTypes.split(",").filter(Boolean) : []).map((v) => (
+            <Badge key={v} className="bg-accent text-accent-foreground hover:bg-accent">
+              {v}
+            </Badge>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col p-4">

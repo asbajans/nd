@@ -2,19 +2,21 @@ import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowRight, Calendar, MapPin, Truck, ChevronLeft } from "lucide-react"
+import { ArrowRight, Calendar, MapPin, Truck, ChevronLeft, Navigation } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { ContactButtons } from "@/components/contact-buttons"
 import { ShareButtons } from "@/components/share-buttons"
 import { ViewTracker } from "@/components/view-tracker"
 import { Badge } from "@/components/ui/badge"
+import { MapDisplay } from "@/components/map/map-display"
 import { getListingBySlug } from "@/app/actions/listings"
+import { TRUCK_TYPES } from "@/lib/constants"
 
 export const dynamic = "force-dynamic"
 
 const SITE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  ? `https://${process.env.VERCEL_PRODUCTION_URL}`
   : "https://nakliyatdiyari.com"
 
 export async function generateMetadata({
@@ -50,11 +52,14 @@ export default async function ListingDetailPage({
   if (!listing) notFound()
 
   const url = `${SITE_URL}/ilan/${listing.slug}`
+  const vehicleTypes = listing.vehicleTypes ? listing.vehicleTypes.split(",").filter(Boolean) : []
+  const hasMap = listing.fromLat && listing.fromLng && listing.toLat && listing.toLng
+  const truckLabel = TRUCK_TYPES.find((t) => t.value === listing.truckType)?.label
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
-    serviceType: `Araç Taşıma - ${listing.vehicleType}`,
+    serviceType: `Araç Taşıma - ${vehicleTypes.join(", ")}`,
     name: listing.title,
     description: listing.description,
     areaServed: [listing.fromCity, listing.toCity],
@@ -104,9 +109,13 @@ export default async function ListingDetailPage({
                   <Truck className="h-16 w-16" />
                 </div>
               )}
-              <Badge className="absolute left-4 top-4 bg-accent text-accent-foreground hover:bg-accent">
-                {listing.vehicleType}
-              </Badge>
+              <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+                {vehicleTypes.map((v) => (
+                  <Badge key={v} className="bg-accent text-accent-foreground hover:bg-accent">
+                    {v}
+                  </Badge>
+                ))}
+              </div>
             </div>
 
             <div className="p-6 md:p-8">
@@ -126,6 +135,11 @@ export default async function ListingDetailPage({
                     <Calendar className="h-4 w-4" /> {listing.loadDate}
                   </span>
                 )}
+                {truckLabel && (
+                  <span className="inline-flex items-center gap-1 text-muted-foreground">
+                    <Truck className="h-4 w-4" /> {truckLabel}
+                  </span>
+                )}
               </div>
 
               <div className="mt-6 rounded-xl bg-secondary p-4">
@@ -143,6 +157,31 @@ export default async function ListingDetailPage({
                   {listing.description}
                 </p>
               </div>
+
+              {hasMap && (
+                <div className="mt-6">
+                  <h2 className="mb-3 font-heading font-bold text-card-foreground">
+                    Rota
+                  </h2>
+                  <MapDisplay
+                    fromLat={Number(listing.fromLat)}
+                    fromLng={Number(listing.fromLng)}
+                    toLat={Number(listing.toLat)}
+                    toLng={Number(listing.toLng)}
+                    fromLabel={listing.fromCity}
+                    toLabel={listing.toCity}
+                  />
+                  <a
+                    href={`https://www.google.com/maps/dir/${listing.fromLat},${listing.fromLng}/${listing.toLat},${listing.toLng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline"
+                  >
+                    <Navigation className="h-4 w-4" />
+                    Google Maps&apos;te aç
+                  </a>
+                </div>
+              )}
 
               {(listing.whatsapp || listing.phone) && (
                 <div className="mt-8 border-t border-border pt-6">

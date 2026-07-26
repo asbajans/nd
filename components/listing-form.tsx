@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { createListing } from "@/app/actions/listings"
-import { TR_CITIES, VEHICLE_TYPES } from "@/lib/constants"
+import { TR_CITIES, VEHICLE_TYPES, TRUCK_TYPES } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,13 +16,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { MapPicker } from "@/components/map/map-picker"
 
 export function ListingForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [vehicleType, setVehicleType] = useState("")
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([])
   const [fromCity, setFromCity] = useState("")
   const [toCity, setToCity] = useState("")
+  const [fromPos, setFromPos] = useState<[number, number] | null>(null)
+  const [toPos, setToPos] = useState<[number, number] | null>(null)
+
+  const hasTruck = selectedTypes.includes("Çekici")
+
+  function toggleType(type: string) {
+    setSelectedTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    )
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -30,17 +41,29 @@ export function ListingForm() {
     const form = new FormData(e.currentTarget)
 
     const priceRaw = String(form.get("price") ?? "").trim()
+    const whatsapp = String(form.get("whatsapp") ?? "").trim()
+
+    if (!whatsapp) {
+      toast.error("WhatsApp numarası zorunludur.")
+      setLoading(false)
+      return
+    }
 
     const res = await createListing({
       title: String(form.get("title")),
       description: String(form.get("description")),
-      vehicleType,
+      vehicleTypes: selectedTypes,
       fromCity,
       toCity,
+      fromLat: fromPos?.[0]?.toString() ?? null,
+      fromLng: fromPos?.[1]?.toString() ?? null,
+      toLat: toPos?.[0]?.toString() ?? null,
+      toLng: toPos?.[1]?.toString() ?? null,
+      truckType: hasTruck ? (String(form.get("truckType") ?? "") || null) : null,
       price: priceRaw ? Number(priceRaw) : null,
       loadDate: String(form.get("loadDate") ?? "") || null,
       contactName: String(form.get("contactName") ?? "") || null,
-      whatsapp: String(form.get("whatsapp") ?? "") || null,
+      whatsapp,
       phone: String(form.get("phone") ?? "") || null,
     })
 
@@ -67,20 +90,46 @@ export function ListingForm() {
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="space-y-2">
+        <Label>Araç Tipi / Tipleri *</Label>
+        <div className="flex flex-wrap gap-2">
+          {VEHICLE_TYPES.map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => toggleType(v)}
+              className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+                selectedTypes.includes(v)
+                  ? "border-accent bg-accent text-accent-foreground"
+                  : "border-border bg-card text-muted-foreground hover:border-accent hover:text-foreground"
+              }`}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+        {selectedTypes.length === 0 && (
+          <p className="text-xs text-muted-foreground">En az bir araç tipi seçin</p>
+        )}
+      </div>
+
+      {hasTruck && (
         <div className="space-y-2">
-          <Label>Araç Tipi *</Label>
-          <Select value={vehicleType} onValueChange={setVehicleType} required>
+          <Label htmlFor="truckType">Çekici Tipi</Label>
+          <Select name="truckType">
             <SelectTrigger>
-              <SelectValue placeholder="Seçin" />
+              <SelectValue placeholder="Çekici tipi seçin" />
             </SelectTrigger>
             <SelectContent>
-              {VEHICLE_TYPES.map((v) => (
-                <SelectItem key={v} value={v}>{v}</SelectItem>
+              {TRUCK_TYPES.map((t) => (
+                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
+      )}
+
+      <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label>Nereden *</Label>
           <Select value={fromCity} onValueChange={setFromCity} required>
@@ -111,12 +160,31 @@ export function ListingForm() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
+          <Label>Çıkış Noktası (Harita)</Label>
+          <MapPicker
+            position={fromPos}
+            onChange={(lat, lng) => setFromPos([lat, lng])}
+            placeholder="Çıkış adresini ara..."
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Varış Noktası (Harita)</Label>
+          <MapPicker
+            position={toPos}
+            onChange={(lat, lng) => setToPos([lat, lng])}
+            placeholder="Varış adresini ara..."
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
           <Label htmlFor="price">Ücret (₺) — opsiyonel</Label>
           <Input id="price" name="price" type="number" min="0" placeholder="Örn: 5000" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="loadDate">Yükleme Tarihi — opsiyonel</Label>
-          <Input id="loadDate" name="loadDate" placeholder="Örn: 15 Mart / Hafta içi" />
+          <Label htmlFor="loadDate">Yükleme Tarihi</Label>
+          <Input id="loadDate" name="loadDate" type="date" />
         </div>
       </div>
 
@@ -142,11 +210,16 @@ export function ListingForm() {
             <Input id="contactName" name="contactName" placeholder="Görünen ad" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="whatsapp">WhatsApp Numarası</Label>
-            <Input id="whatsapp" name="whatsapp" placeholder="05XX XXX XX XX" />
+            <Label htmlFor="whatsapp">WhatsApp Numarası *</Label>
+            <Input
+              id="whatsapp"
+              name="whatsapp"
+              required
+              placeholder="05XX XXX XX XX"
+            />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">Telefon</Label>
+            <Label htmlFor="phone">Telefon — opsiyonel</Label>
             <Input id="phone" name="phone" placeholder="05XX XXX XX XX" />
           </div>
         </div>
@@ -154,7 +227,7 @@ export function ListingForm() {
 
       <Button
         type="submit"
-        disabled={loading}
+        disabled={loading || selectedTypes.length === 0}
         size="lg"
         className="w-full bg-accent text-accent-foreground hover:bg-accent/90 md:w-auto"
       >

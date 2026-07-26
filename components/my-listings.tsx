@@ -54,7 +54,7 @@ export function MyListings({ listings }: { listings: Listing[] }) {
                 <Badge className={status.className}>{status.label}</Badge>
               </div>
               <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
-                {l.fromCity} <ArrowRight className="h-3 w-3" /> {l.toCity} · {l.vehicleType}
+                {l.fromCity} <ArrowRight className="h-3 w-3" /> {l.toCity} · {l.vehicleTypes?.split(",").filter(Boolean).join(", ") || "—"}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">

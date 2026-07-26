@@ -4,9 +4,15 @@ export const VEHICLE_TYPES = [
   "Motosiklet",
   "Ticari Araç",
   "Kamyon / Tır",
+  "Çekici",
   "İş Makinesi",
   "Klasik / Lüks Araç",
   "Diğer",
+] as const
+
+export const TRUCK_TYPES = [
+  { value: "tekli", label: "Tekli Çekici" },
+  { value: "coklu", label: "Çoklu Çekici" },
 ] as const
 
 export const TR_CITIES = [

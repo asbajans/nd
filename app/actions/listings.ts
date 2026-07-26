@@ -29,7 +29,7 @@ export async function getPublishedListings(filters: ListingFilters = {}) {
       )!,
     )
   }
-  if (filters.vehicleType) conditions.push(eq(listings.vehicleType, filters.vehicleType))
+  if (filters.vehicleType) conditions.push(ilike(listings.vehicleTypes, `%${filters.vehicleType}%`))
   if (filters.fromCity) conditions.push(eq(listings.fromCity, filters.fromCity))
   if (filters.toCity) conditions.push(eq(listings.toCity, filters.toCity))
 
@@ -77,9 +77,14 @@ export async function getMyListings() {
 export type CreateListingInput = {
   title: string
   description: string
-  vehicleType: string
+  vehicleTypes: string[]
   fromCity: string
   toCity: string
+  fromLat?: string | null
+  fromLng?: string | null
+  toLat?: string | null
+  toLng?: string | null
+  truckType?: string | null
   price?: number | null
   loadDate?: string | null
   contactName?: string | null
@@ -98,8 +103,12 @@ export async function createListing(input: CreateListingInput) {
     }
   }
 
-  if (!input.title || !input.description || !input.vehicleType || !input.fromCity || !input.toCity) {
+  if (!input.title || !input.description || input.vehicleTypes.length === 0 || !input.fromCity || !input.toCity) {
     return { ok: false as const, error: "Lütfen zorunlu alanları doldurun." }
+  }
+
+  if (!input.whatsapp) {
+    return { ok: false as const, error: "WhatsApp numarası zorunludur." }
   }
 
   const base = slugify(`${input.title}-${input.fromCity}-${input.toCity}`) || "ilan"
@@ -110,9 +119,14 @@ export async function createListing(input: CreateListingInput) {
     slug,
     title: input.title,
     description: input.description,
-    vehicleType: input.vehicleType,
+    vehicleTypes: input.vehicleTypes.join(","),
     fromCity: input.fromCity,
     toCity: input.toCity,
+    fromLat: input.fromLat ?? null,
+    fromLng: input.fromLng ?? null,
+    toLat: input.toLat ?? null,
+    toLng: input.toLng ?? null,
+    truckType: input.truckType ?? null,
     price: input.price ?? null,
     loadDate: input.loadDate ?? null,
     contactName: input.contactName ?? null,
