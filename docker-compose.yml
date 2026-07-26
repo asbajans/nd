@@ -3,7 +3,7 @@ services:
   app:
     build: ./
     ports:
-      - "3000:3000"
+      - "3800:3000"
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL:-https://nakliyatdiyari.com}
@@ -33,7 +33,7 @@ services:
 
   migrate:
     build: ./
-    command: ["npm", "run", "migrate"]
+    command: ["node", "scripts/migrate.js"]
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - NEXT_PUBLIC_SITE_URL=https://nakliyatdiyari.com
