@@ -32,11 +32,14 @@ services:
       retries: 3
 
   migrate:
-    build: ./
-    command: ["node", "scripts/migrate.js"]
+    image: postgres:15-alpine
     environment:
-      - DATABASE_URL=${DATABASE_URL}
-      - NEXT_PUBLIC_SITE_URL=https://nakliyatdiyari.com
+      - DB_PASSWORD=${DB_PASSWORD:-db_password}
+      - DB_USER=${DB_USER:-nakliyat_user}
+      - DB_NAME=${DB_NAME:-nakliyat_diyari}
+    volumes:
+      - ./database:/migrations
+    entrypoint: ["sh", "-c", "PGPASSWORD=$DB_PASSWORD psql -h db -U $DB_USER -d $DB_NAME -f /migrations/init.sql"]
     depends_on:
       db:
         condition: service_healthy
