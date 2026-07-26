@@ -7,9 +7,43 @@ __v0_jsx-dev-runtime.ts
 .vercel/
 
 # Environment variables
+.env
 .env*.local
 
 # Common ignores
 node_modules
 .next/
 .DS_Store
+
+# Build artifacts
+dist/
+BUILD/
+.build
+
+tmp/
+temp/
+logs/
+.db
+*.swp
+*.swo
+*~
+
+# Runtime data
+*.log
+*.cache
+
+# Production
+coverage/
+.nyc_output/
+.history
+gcloudmailtrap
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System files
+.DS_Store
+Thumbs.db
