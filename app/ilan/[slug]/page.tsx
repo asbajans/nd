@@ -15,9 +15,7 @@ import { TRUCK_TYPES } from "@/lib/constants"
 
 export const dynamic = "force-dynamic"
 
-const SITE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PRODUCTION_URL}`
-  : "https://nakliyatdiyari.com"
+const SITE_URL = "https://nakliyatdiyari.com"
 
 export async function generateMetadata({
   params,

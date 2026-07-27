@@ -4,9 +4,10 @@ export const VEHICLE_TYPES = [
   "Motosiklet",
   "Ticari Araç",
   "Kamyon / Tır",
-  "Çekici",
   "İş Makinesi",
   "Klasik / Lüks Araç",
+  "Karavan / Çekme Karavan",
+  "Tekne",
   "Diğer",
 ] as const
 

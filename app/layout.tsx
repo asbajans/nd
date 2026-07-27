@@ -1,4 +1,3 @@
-import { Analytics } from "@vercel/analytics/next"
 import type { Metadata, Viewport } from "next"
 import { Inter, Poppins } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
@@ -17,9 +16,7 @@ const poppins = Poppins({
   display: "swap",
 })
 
-const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : "https://nakliyatdiyari.com"
+const siteUrl = "https://nakliyatdiyari.com"
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -52,7 +49,6 @@ export const metadata: Metadata = {
     description:
       "Oto çekici, otomobil ve araç nakliyat ilanları. İlan verin, WhatsApp ile iletişime geçin.",
   },
-  generator: "v0.app",
   icons: {
     icon: [
       { url: "/icon-light-32x32.png", media: "(prefers-color-scheme: light)" },
@@ -78,7 +74,6 @@ export default function RootLayout({
       <body className="bg-background font-sans antialiased">
         {children}
         <Toaster richColors position="top-center" />
-        {process.env.NODE_ENV === "production" && <Analytics />}
       </body>
     </html>
   )
