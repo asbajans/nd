@@ -44,7 +44,13 @@ export function MapPicker({ position, onChange, placeholder }: MapPickerProps) {
 
   function setMarker(lat: number, lng: number) {
     if (markerRef.current) markerRef.current.remove()
-    markerRef.current = L.marker([lat, lng]).addTo(mapRef.current!)
+    const icon = L.divIcon({
+      className: "",
+      html: `<div style="width:28px;height:40px;position:relative;transform:translate(-50%,-100%)"><svg viewBox="0 0 28 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 0C6.27 0 0 6.27 0 14c0 10.5 14 26 14 26s14-15.5 14-26C28 6.27 21.73 0 14 0z" fill="#2563eb"/><path d="M14 4C9.04 4 5 8.04 5 13c0 7 9 17 9 17s9-10 9-17c0-4.96-4.04-9-9-9z" fill="#fff"/><circle cx="14" cy="13" r="5" fill="#2563eb"/></svg></div>`,
+      iconSize: [28, 40],
+      iconAnchor: [14, 40],
+    })
+    markerRef.current = L.marker([lat, lng], { icon }).addTo(mapRef.current!)
     mapRef.current?.setView([lat, lng], mapRef.current.getZoom())
   }
 

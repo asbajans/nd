@@ -27,8 +27,6 @@ export function ListingForm() {
   const [fromPos, setFromPos] = useState<[number, number] | null>(null)
   const [toPos, setToPos] = useState<[number, number] | null>(null)
 
-  const hasTruck = selectedTypes.includes("Çekici")
-
   function toggleType(type: string) {
     setSelectedTypes((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
@@ -59,7 +57,7 @@ export function ListingForm() {
       fromLng: fromPos?.[1]?.toString() ?? null,
       toLat: toPos?.[0]?.toString() ?? null,
       toLng: toPos?.[1]?.toString() ?? null,
-      truckType: hasTruck ? (String(form.get("truckType") ?? "") || null) : null,
+      truckType: String(form.get("truckType") ?? "") || null,
       price: priceRaw ? Number(priceRaw) : null,
       loadDate: String(form.get("loadDate") ?? "") || null,
       contactName: String(form.get("contactName") ?? "") || null,
@@ -113,21 +111,19 @@ export function ListingForm() {
         )}
       </div>
 
-      {hasTruck && (
-        <div className="space-y-2">
-          <Label htmlFor="truckType">Çekici Tipi</Label>
-          <Select name="truckType">
-            <SelectTrigger>
-              <SelectValue placeholder="Çekici tipi seçin" />
-            </SelectTrigger>
-            <SelectContent>
-              {TRUCK_TYPES.map((t) => (
-                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
+      <div className="space-y-2">
+        <Label htmlFor="truckType">Çekici Tipi</Label>
+        <Select name="truckType">
+          <SelectTrigger>
+            <SelectValue placeholder="Çekici tipi seçin (isteğe bağlı)" />
+          </SelectTrigger>
+          <SelectContent>
+            {TRUCK_TYPES.map((t) => (
+              <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">

@@ -29,22 +29,17 @@ export function MapDisplay({ fromLat, fromLng, toLat, toLng, fromLabel, toLabel 
       attribution: "&copy; OpenStreetMap",
     }).addTo(map)
 
-    const fromIcon = L.divIcon({
-      className: "",
-      html: `<div style="background:#22c55e;color:white;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3)">${fromLabel}</div>`,
-      iconSize: [0, 0],
-      iconAnchor: [0, 0],
-    })
+    function pinIcon(color: string, label: string) {
+      return L.divIcon({
+        className: "",
+        html: `<div style="display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-100%)"><svg width="30" height="42" viewBox="0 0 30 42" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 0C6.72 0 0 6.72 0 15c0 11.25 15 27 15 27s15-15.75 15-27C30 6.72 23.28 0 15 0z" fill="${color}"/><circle cx="15" cy="14" r="7" fill="#fff"/><circle cx="15" cy="14" r="4" fill="${color}"/></svg><span style="background:${color};color:white;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;margin-top:-8px;border:1px solid white;box-shadow:0 1px 4px rgba(0,0,0,.2)">${label}</span></div>`,
+        iconSize: [30, 60],
+        iconAnchor: [15, 60],
+      })
+    }
 
-    const toIcon = L.divIcon({
-      className: "",
-      html: `<div style="background:#ef4444;color:white;padding:4px 8px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3)">${toLabel}</div>`,
-      iconSize: [0, 0],
-      iconAnchor: [0, 0],
-    })
-
-    L.marker([fromLat, fromLng], { icon: fromIcon }).addTo(map)
-    L.marker([toLat, toLng], { icon: toIcon }).addTo(map)
+    L.marker([fromLat, fromLng], { icon: pinIcon("#22c55e", fromLabel) }).addTo(map)
+    L.marker([toLat, toLng], { icon: pinIcon("#ef4444", toLabel) }).addTo(map)
 
     const bounds = L.latLngBounds([fromLat, fromLng], [toLat, toLng])
     map.fitBounds(bounds, { padding: [50, 50] })
