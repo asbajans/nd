@@ -1,15 +1,21 @@
 version: '3.8'
 services:
   app:
+    # GHCR'dan çekilen hazır imaj. Portainer stack env'inde
+    # APP_IMAGE=ghcr.io/<github-kullanici-adi>/nakliyat-diyari:latest olarak ayarlayın.
+    # Yerelde değişkensiz çalışınca build alıp 'nakliyat-diyari:latest' olarak etiketler.
+    image: ${APP_IMAGE:-nakliyat-diyari:latest}
     build: ./
     ports:
       - "3800:3000"
     environment:
       - DATABASE_URL=postgresql://${DB_USER:-nakliyat_user}:${DB_PASSWORD:-db_password}@db:5432/${DB_NAME:-nakliyat_diyari}
-      - BETTER_AUTH_URL=${BETTER_AUTH_URL:-https://nakliyatdiyari.com}
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL:-https://www.nakliyatdiyari.com}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
-      - NEXT_PUBLIC_SITE_URL=https://nakliyatdiyari.com
+      - NEXT_PUBLIC_SITE_URL=https://www.nakliyatdiyari.com
       - NODE_ENV=production
+    volumes:
+      - ./public/uploads:/app/public/uploads
     depends_on:
       - db
       - migrate

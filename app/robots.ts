@@ -1,8 +1,5 @@
 import type { MetadataRoute } from "next"
-
-const SITE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : "https://nakliyatdiyari.com"
+import { SITE_URL } from "@/lib/site"
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -11,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin", "/panel", "/api/"],
     },
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/sitemap_index.xml`],
   }
 }

@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { MapPicker } from "@/components/map/map-picker"
+import { ImageUploader } from "@/components/image-uploader"
 
 export function ListingForm() {
   const router = useRouter()
@@ -26,6 +27,7 @@ export function ListingForm() {
   const [toCity, setToCity] = useState("")
   const [fromPos, setFromPos] = useState<[number, number] | null>(null)
   const [toPos, setToPos] = useState<[number, number] | null>(null)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
 
   function toggleType(type: string) {
     setSelectedTypes((prev) =>
@@ -63,6 +65,7 @@ export function ListingForm() {
       contactName: String(form.get("contactName") ?? "") || null,
       whatsapp,
       phone: String(form.get("phone") ?? "") || null,
+      imageUrl,
     })
 
     setLoading(false)
@@ -194,6 +197,12 @@ export function ListingForm() {
           placeholder="Taşınacak aracın detayları, rota, koşullar vb."
         />
       </div>
+
+      <ImageUploader
+        label="İlan Fotoğrafı"
+        value={imageUrl}
+        onChange={setImageUrl}
+      />
 
       <div className="rounded-xl border border-border bg-secondary/50 p-4">
         <h3 className="font-heading font-bold text-foreground">İletişim Bilgileri</h3>

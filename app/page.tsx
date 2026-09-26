@@ -1,4 +1,5 @@
 import Image from "next/image"
+import type { Metadata } from "next"
 import { ShieldCheck, Zap, MapPinned, Truck } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
@@ -6,8 +7,39 @@ import { SearchBar } from "@/components/search-bar"
 import { ListingCard } from "@/components/listing-card"
 import { ButtonLink } from "@/components/button-link"
 import { getPublishedListings } from "@/app/actions/listings"
+import { SITE_URL, absoluteUrl } from "@/lib/site"
 
 export const dynamic = "force-dynamic"
+
+export const metadata: Metadata = {
+  title: "Nakliyat Diyarı — Araç Taşıma İlanları",
+  description:
+    "Türkiye'nin araç taşıma ilan platformu. Oto çekici, otomobil ve araç nakliyat ilanlarını ücretsiz görüntüleyin, ilan verin ve nakliyecilerle doğrudan WhatsApp üzerinden iletişime geçin.",
+  alternates: { canonical: SITE_URL },
+  openGraph: {
+    type: "website",
+    locale: "tr_TR",
+    url: SITE_URL,
+    siteName: "Nakliyat Diyarı",
+    title: "Nakliyat Diyarı — Araç Taşıma İlanları",
+    description:
+      "Oto çekici, otomobil ve araç nakliyat ilanları. İlan verin, WhatsApp ile iletişime geçin.",
+    images: [
+      {
+        url: absoluteUrl("/hero-cta.png"),
+        width: 1200,
+        height: 630,
+        alt: "Otoyolda araç taşıyan çekici tır",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Nakliyat Diyarı — Araç Taşıma İlanları",
+    description: "Oto çekici, otomobil ve araç nakliyat ilanları.",
+    images: [absoluteUrl("/hero-cta.png")],
+  },
+}
 
 export default async function HomePage() {
   const listings = (await getPublishedListings()).slice(0, 6)

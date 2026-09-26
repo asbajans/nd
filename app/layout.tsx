@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import { Inter, Poppins } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
+import { SITE_URL, absoluteUrl } from "@/lib/site"
 import "./globals.css"
 
 const inter = Inter({
@@ -16,7 +17,17 @@ const poppins = Poppins({
   display: "swap",
 })
 
-const siteUrl = "https://nakliyatdiyari.com"
+const siteUrl = SITE_URL
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Nakliyat Diyarı",
+  url: SITE_URL,
+  logo: absoluteUrl("/icon.svg"),
+  description:
+    "Türkiye'nin araç taşıma ilan platformu. Oto çekici, otomobil ve araç nakliyat ilanları.",
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -35,19 +46,42 @@ export const metadata: Metadata = {
     "çekici ilanları",
     "şehirler arası araç taşıma",
   ],
+  alternates: {
+    canonical: SITE_URL,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     type: "website",
     locale: "tr_TR",
+    url: SITE_URL,
     siteName: "Nakliyat Diyarı",
     title: "Nakliyat Diyarı — Araç Taşıma İlanları",
     description:
       "Oto çekici, otomobil ve araç nakliyat ilanları. İlan verin, WhatsApp ile iletişime geçin.",
+    images: [
+      {
+        url: absoluteUrl("/hero-cta.png"),
+        width: 1200,
+        height: 630,
+        alt: "Nakliyat Diyarı — Araç Taşıma İlanları",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Nakliyat Diyarı — Araç Taşıma İlanları",
     description:
       "Oto çekici, otomobil ve araç nakliyat ilanları. İlan verin, WhatsApp ile iletişime geçin.",
+    images: [absoluteUrl("/hero-cta.png")],
   },
   icons: {
     icon: [
@@ -72,6 +106,10 @@ export default function RootLayout({
   return (
     <html lang="tr" className={`light ${inter.variable} ${poppins.variable}`}>
       <body className="bg-background font-sans antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
         {children}
         <Toaster richColors position="top-center" />
       </body>

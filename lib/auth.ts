@@ -3,7 +3,7 @@ import { pool } from "@/lib/db"
 
 export const auth = betterAuth({
   database: pool,
-  baseURL: process.env.BETTER_AUTH_URL ?? "https://nakliyatdiyari.com",
+  baseURL: process.env.BETTER_AUTH_URL ?? "https://www.nakliyatdiyari.com",
   emailAndPassword: {
     enabled: true,
     autoSignIn: true,
@@ -26,6 +26,7 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     "https://nakliyatdiyari.com",
+    "https://www.nakliyatdiyari.com",
     ...(process.env.ALLOWED_ORIGINS?.split(",") || []),
   ],
   session: {

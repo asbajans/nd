@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/site-footer"
 import { SearchBar } from "@/components/search-bar"
 import { ListingCard } from "@/components/listing-card"
 import { getPublishedListings } from "@/app/actions/listings"
+import { absoluteUrl } from "@/lib/site"
 
 export const dynamic = "force-dynamic"
 
@@ -12,7 +13,30 @@ export const metadata: Metadata = {
   title: "Araç Taşıma İlanları",
   description:
     "Şehirler arası araç taşıma, oto çekici ve otomobil nakliyat ilanları. İlleri ve araç tipini seçerek arayın, nakliyecilerle doğrudan iletişime geçin.",
-  alternates: { canonical: "/ilanlar" },
+  alternates: { canonical: absoluteUrl("/ilanlar") },
+  openGraph: {
+    type: "website",
+    locale: "tr_TR",
+    url: absoluteUrl("/ilanlar"),
+    siteName: "Nakliyat Diyarı",
+    title: "Araç Taşıma İlanları | Nakliyat Diyarı",
+    description:
+      "Şehirler arası araç taşıma, oto çekici ve otomobil nakliyat ilanları.",
+    images: [
+      {
+        url: absoluteUrl("/hero-cta.png"),
+        width: 1200,
+        height: 630,
+        alt: "Araç taşıma ilanları",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Araç Taşıma İlanları | Nakliyat Diyarı",
+    description: "Şehirler arası araç taşıma, oto çekici ve otomobil nakliyat ilanları.",
+    images: [absoluteUrl("/hero-cta.png")],
+  },
 }
 
 export default async function ListingsPage({

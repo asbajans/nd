@@ -1,10 +1,12 @@
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import type { Metadata } from "next"
+import { absoluteUrl } from "@/lib/site"
 
 export const metadata: Metadata = {
   title: "Gizlilik Politikası",
   robots: { index: false },
+  alternates: { canonical: absoluteUrl("/gizlilik") },
 }
 
 export default function GizlilikPage() {

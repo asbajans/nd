@@ -1,0 +1,75 @@
+# CI/CD: nd branch'e push -> GHCR'a imaj push -> Portainer webhook ile redeploy
+#
+# GEREKLİ GITHUB SECRET (repo Settings > Secrets and variables > Actions):
+#   PORTAINER_WEBHOOK_URL  - Portainer > Stacks > <stack> > Webhooks > Create webhook
+#                            ile üretilen URL. Örn: https://portainer.ornek.com:9443/api/stacks/webhooks/<token>
+#
+# EKSTRA SECRET GEREKMEZ: GHCR girişi workflow'daki otomatik GITHUB_TOKEN ile yapılır.
+#
+# PORTAINER TARAFINDA (bir kerelik kurulum):
+#   1. Stack env'lerine ekleyin: APP_IMAGE=ghcr.io/<github-kullanici-adi>/nakliyat-diyari:latest
+#      (+ mevcut BETTER_AUTH_SECRET, DB_USER, DB_PASSWORD, DB_NAME, BETTER_AUTH_URL)
+#   2. Stack update ayarlarında imajı yeniden çekmeyi açın (webhook "Re-pull image and redeploy"
+#      modunda olmalı; yoksa eski imajla ayağa kalkar).
+#   3. GHCR paketi "private" ise: Portainer > Registries > GHCR ekleyin
+#      (PAT: read:packages yetkili). Public pakette gerekmez.
+
+name: Build, Push & Deploy
+
+on:
+  push:
+    branches: [nd]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BASENAME: nakliyat-diyari
+  NEXT_PUBLIC_SITE_URL: https://www.nakliyatdiyari.com
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: GHCR login (otomatik GITHUB_TOKEN, secret gerekmez)
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Etiketleri hazırla
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_BASENAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build + GHCR push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            NEXT_PUBLIC_SITE_URL=${{ env.NEXT_PUBLIC_SITE_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  redeploy:
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Portainer webhook ile redeploy tetikle
+        run: curl -fsSL --retry 3 -X POST "$PORTAINER_WEBHOOK_URL"
+        env:
+          PORTAINER_WEBHOOK_URL: ${{ secrets.PORTAINER_WEBHOOK_URL }}

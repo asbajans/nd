@@ -1,11 +1,12 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { listings } from "@/lib/db/schema"
+import { listings, user as userTable } from "@/lib/db/schema"
 import { requireUser } from "@/lib/session"
 import { slugify } from "@/lib/slug"
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
+import type { ListingWithOwner } from "@/lib/listing-image"
 
 export type ListingFilters = {
   q?: string
@@ -16,7 +17,9 @@ export type ListingFilters = {
 
 // ---------- Public reads (only approved listings) ----------
 
-export async function getPublishedListings(filters: ListingFilters = {}) {
+export async function getPublishedListings(
+  filters: ListingFilters = {},
+): Promise<ListingWithOwner[]> {
   const conditions = [eq(listings.status, "approved")]
 
   if (filters.q) {
@@ -33,20 +36,31 @@ export async function getPublishedListings(filters: ListingFilters = {}) {
   if (filters.fromCity) conditions.push(eq(listings.fromCity, filters.fromCity))
   if (filters.toCity) conditions.push(eq(listings.toCity, filters.toCity))
 
-  return db
-    .select()
+  const rows = await db
+    .select({
+      listing: listings,
+      ownerImage: userTable.image,
+    })
     .from(listings)
+    .leftJoin(userTable, eq(listings.userId, userTable.id))
     .where(and(...conditions))
     .orderBy(desc(listings.createdAt))
+
+  return rows.map((r) => ({ ...r.listing, ownerImage: r.ownerImage }))
 }
 
-export async function getListingBySlug(slug: string) {
+export async function getListingBySlug(slug: string): Promise<ListingWithOwner | null> {
   const [row] = await db
-    .select()
+    .select({
+      listing: listings,
+      ownerImage: userTable.image,
+    })
     .from(listings)
+    .leftJoin(userTable, eq(listings.userId, userTable.id))
     .where(and(eq(listings.slug, slug), eq(listings.status, "approved")))
     .limit(1)
-  return row ?? null
+  if (!row) return null
+  return { ...row.listing, ownerImage: row.ownerImage }
 }
 
 export async function incrementViews(id: number) {
@@ -57,10 +71,17 @@ export async function incrementViews(id: number) {
 }
 
 export async function getAllPublishedSlugs() {
-  return db
-    .select({ slug: listings.slug, updatedAt: listings.updatedAt })
+  const rows = await db
+    .select({
+      slug: listings.slug,
+      updatedAt: listings.updatedAt,
+      imageUrl: listings.imageUrl,
+      ownerImage: userTable.image,
+    })
     .from(listings)
+    .leftJoin(userTable, eq(listings.userId, userTable.id))
     .where(eq(listings.status, "approved"))
+  return rows
 }
 
 // ---------- Authenticated user actions ----------
@@ -136,6 +157,17 @@ export async function createListing(input: CreateListingInput) {
     status: "pending",
   })
 
+  revalidatePath("/panel")
+  revalidatePath("/admin")
+  return { ok: true as const }
+}
+
+export async function updateMyListingImage(id: number, imageUrl: string | null) {
+  const user = await requireUser()
+  await db
+    .update(listings)
+    .set({ imageUrl, updatedAt: new Date() })
+    .where(and(eq(listings.id, id), eq(listings.userId, user.id)))
   revalidatePath("/panel")
   revalidatePath("/admin")
   return { ok: true as const }

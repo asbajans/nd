@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { ListingForm } from "@/components/listing-form"
 import { MyListings } from "@/components/my-listings"
+import { ProfileImageForm } from "@/components/profile-image-form"
 import { getSessionUser } from "@/lib/session"
 import { getMyListings } from "@/app/actions/listings"
 
@@ -37,6 +38,18 @@ export default async function PanelPage() {
               Hesabınız admin onayı bekliyor. Onaylandıktan sonra ilanlarınız yayına alınabilir.
             </div>
           )}
+
+          <section className="mt-8 rounded-2xl border border-border bg-card p-6 md:p-8">
+            <h2 className="font-heading text-xl font-extrabold text-card-foreground">
+              Profil Logosu
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Fotoğraf eklemediğiniz ilanlarda bu görsel otomatik gösterilir.
+            </p>
+            <div className="mt-6">
+              <ProfileImageForm currentImage={(user as { image?: string | null }).image ?? null} />
+            </div>
+          </section>
 
           <section className="mt-8 rounded-2xl border border-border bg-card p-6 md:p-8">
             <h2 className="font-heading text-xl font-extrabold text-card-foreground">

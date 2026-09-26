@@ -9,7 +9,8 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV NEXT_PUBLIC_SITE_URL=https://nakliyatdiyari.com
+ARG NEXT_PUBLIC_SITE_URL=https://www.nakliyatdiyari.com
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 RUN pnpm run build
 
 FROM base AS runner

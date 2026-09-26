@@ -3,12 +3,21 @@ import { MessageCircle, HelpCircle, Upload } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { ButtonLink } from "@/components/button-link"
+import { absoluteUrl } from "@/lib/site"
 
 export const metadata: Metadata = {
   title: "İletişim",
   description:
     "Nakliyat Diyarı ile iletişime geçin. İlanlarla ilgili sorularınız için bize ulaşın.",
-  alternates: { canonical: "/iletisim" },
+  alternates: { canonical: absoluteUrl("/iletisim") },
+  openGraph: {
+    type: "website",
+    locale: "tr_TR",
+    url: absoluteUrl("/iletisim"),
+    siteName: "Nakliyat Diyarı",
+    title: "İletişim | Nakliyat Diyarı",
+    description: "Nakliyat Diyarı ile iletişime geçin.",
+  },
 }
 
 export default function ContactPage() {

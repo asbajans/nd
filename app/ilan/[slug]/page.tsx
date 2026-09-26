@@ -12,10 +12,11 @@ import { Badge } from "@/components/ui/badge"
 import { MapDisplay } from "@/components/map/map-display"
 import { getListingBySlug } from "@/app/actions/listings"
 import { TRUCK_TYPES } from "@/lib/constants"
+import { SITE_URL, absoluteUrl } from "@/lib/site"
+import { resolveListingImage } from "@/lib/listing-image"
+import { LISTING_VARIANTS } from "@/lib/listing-variants"
 
 export const dynamic = "force-dynamic"
-
-const SITE_URL = "https://nakliyatdiyari.com"
 
 export async function generateMetadata({
   params,
@@ -24,19 +25,38 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params
   const listing = await getListingBySlug(slug)
-  if (!listing) return { title: "İlan bulunamadı" }
+  if (!listing) return { title: "İlan bulunamadı", robots: { index: false } }
 
+  const img = resolveListingImage(listing, listing.ownerImage)
   const description = listing.description.slice(0, 155)
+  const canonical = absoluteUrl(`/ilan/${listing.slug}`)
   return {
     title: `${listing.title} — ${listing.fromCity} / ${listing.toCity}`,
     description,
-    alternates: { canonical: `/ilan/${listing.slug}` },
+    alternates: { canonical },
     openGraph: {
       title: listing.title,
       description,
+      url: canonical,
+      siteName: "Nakliyat Diyarı",
+      locale: "tr_TR",
       type: "article",
-      images: listing.imageUrl ? [listing.imageUrl] : undefined,
+      images: [
+        {
+          url: img.startsWith("http") ? img : absoluteUrl(img),
+          width: 1200,
+          height: 630,
+          alt: listing.title,
+        },
+      ],
     },
+    twitter: {
+      card: "summary_large_image",
+      title: listing.title,
+      description,
+      images: [img.startsWith("http") ? img : absoluteUrl(img)],
+    },
+    robots: { index: true, follow: true },
   }
 }
 
@@ -50,6 +70,8 @@ export default async function ListingDetailPage({
   if (!listing) notFound()
 
   const url = `${SITE_URL}/ilan/${listing.slug}`
+  const img = resolveListingImage(listing, listing.ownerImage)
+  const imgAbsolute = img.startsWith("http") ? img : absoluteUrl(img)
   const vehicleTypes = listing.vehicleTypes ? listing.vehicleTypes.split(",").filter(Boolean) : []
   const hasMap = listing.fromLat && listing.fromLng && listing.toLat && listing.toLng
   const truckLabel = TRUCK_TYPES.find((t) => t.value === listing.truckType)?.label
@@ -60,8 +82,10 @@ export default async function ListingDetailPage({
     serviceType: `Araç Taşıma - ${vehicleTypes.join(", ")}`,
     name: listing.title,
     description: listing.description,
+    url,
+    image: imgAbsolute,
     areaServed: [listing.fromCity, listing.toCity],
-    provider: { "@type": "Organization", name: "Nakliyat Diyarı" },
+    provider: { "@type": "Organization", name: "Nakliyat Diyarı", url: SITE_URL },
     ...(listing.price
       ? {
           offers: {
@@ -69,9 +93,20 @@ export default async function ListingDetailPage({
             price: listing.price,
             priceCurrency: "TRY",
             availability: "https://schema.org/InStock",
+            url,
           },
         }
       : {}),
+  }
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "İlanlar", item: `${SITE_URL}/ilanlar` },
+      { "@type": "ListItem", position: 3, name: listing.title, item: url },
+    ],
   }
 
   return (
@@ -82,9 +117,20 @@ export default async function ListingDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
 
       <main className="flex-1">
         <div className="mx-auto max-w-4xl px-4 py-8">
+          <nav aria-label="Sayfa yolu" className="mb-6 flex items-center gap-1 text-sm text-muted-foreground">
+            <Link href="/" className="hover:text-foreground">Ana Sayfa</Link>
+            <span>/</span>
+            <Link href="/ilanlar" className="hover:text-foreground">İlanlar</Link>
+            <span>/</span>
+            <span className="truncate font-medium text-foreground">{listing.title}</span>
+          </nav>
           <Link
             href="/ilanlar"
             className="mb-6 inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
@@ -94,19 +140,13 @@ export default async function ListingDetailPage({
 
           <div className="overflow-hidden rounded-2xl border border-border bg-card">
             <div className="relative aspect-[16/9] w-full bg-secondary">
-              {listing.imageUrl ? (
-                <Image
-                  src={listing.imageUrl || "/placeholder.svg"}
-                  alt={listing.title}
-                  fill
-                  priority
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-muted-foreground">
-                  <Truck className="h-16 w-16" />
-                </div>
-              )}
+              <Image
+                src={img}
+                alt={`${listing.title} — ${listing.fromCity} ${listing.toCity} araç taşıma ilanı fotoğrafı`}
+                fill
+                priority
+                className="object-cover"
+              />
               <div className="absolute left-4 top-4 flex flex-wrap gap-2">
                 {vehicleTypes.map((v) => (
                   <Badge key={v} className="bg-accent text-accent-foreground hover:bg-accent">
@@ -154,6 +194,24 @@ export default async function ListingDetailPage({
                 <p className="mt-2 whitespace-pre-line text-muted-foreground leading-relaxed">
                   {listing.description}
                 </p>
+              </div>
+
+              <div className="mt-6 rounded-xl border border-border bg-secondary/40 p-4">
+                <h2 className="font-heading text-sm font-bold uppercase tracking-wide text-card-foreground">
+                  Bu ilan hakkında
+                </h2>
+                <ul className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                  {LISTING_VARIANTS.map((v) => (
+                    <li key={v.key}>
+                      <Link
+                        href={`/ilan/${listing.slug}/${v.path}`}
+                        className="text-accent hover:underline"
+                      >
+                        {listing.fromCity} - {listing.toCity} {v.titleSuffix.toLocaleLowerCase("tr-TR")}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
               {hasMap && (

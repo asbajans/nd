@@ -1,29 +1,34 @@
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowRight, MapPin, Truck, Eye } from "lucide-react"
+import { ArrowRight, MapPin, Eye } from "lucide-react"
 import type { Listing } from "@/lib/db/schema"
+import { resolveListingImage } from "@/lib/listing-image"
 import { Badge } from "@/components/ui/badge"
 
-export function ListingCard({ listing }: { listing: Listing }) {
+export function ListingCard({
+  listing,
+  ownerImage,
+}: {
+  listing: Listing
+  ownerImage?: string | null
+}) {
+  const fallbackOwner =
+    ownerImage ?? (listing as { ownerImage?: string | null }).ownerImage ?? null
+  const img = resolveListingImage(listing, fallbackOwner)
+
   return (
     <Link
       href={`/ilan/${listing.slug}`}
       className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-lg"
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-secondary">
-        {listing.imageUrl ? (
-          <Image
-            src={listing.imageUrl || "/placeholder.svg"}
-            alt={listing.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 33vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground">
-            <Truck className="h-12 w-12" />
-          </div>
-        )}
+        <Image
+          src={img}
+          alt={listing.title}
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+        />
         <div className="absolute left-3 top-3 flex flex-wrap gap-1">
           {(listing.vehicleTypes ? listing.vehicleTypes.split(",").filter(Boolean) : []).map((v) => (
             <Badge key={v} className="bg-accent text-accent-foreground hover:bg-accent">

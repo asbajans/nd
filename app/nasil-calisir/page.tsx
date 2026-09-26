@@ -3,12 +3,21 @@ import { UserPlus, ShieldCheck, Upload, MessageCircle } from "lucide-react"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { ButtonLink } from "@/components/button-link"
+import { absoluteUrl } from "@/lib/site"
 
 export const metadata: Metadata = {
   title: "Nasıl Çalışır",
   description:
     "Nakliyat Diyarı'nda araç taşıma ilanı vermek ve nakliyecilerle iletişime geçmek nasıl çalışır? Adım adım öğrenin.",
-  alternates: { canonical: "/nasil-calisir" },
+  alternates: { canonical: absoluteUrl("/nasil-calisir") },
+  openGraph: {
+    type: "website",
+    locale: "tr_TR",
+    url: absoluteUrl("/nasil-calisir"),
+    siteName: "Nakliyat Diyarı",
+    title: "Nasıl Çalışır | Nakliyat Diyarı",
+    description: "Araç taşıma ilanı vermek ve nakliyecilerle iletişime geçmek nasıl çalışır?",
+  },
 }
 
 const steps = [
