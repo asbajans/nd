@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer"
 import { SearchBar } from "@/components/search-bar"
 import { ListingCard } from "@/components/listing-card"
 import { ButtonLink } from "@/components/button-link"
+import { FloatingWhatsapp } from "@/components/floating-whatsapp"
 import { getPublishedListings } from "@/app/actions/listings"
 import { SITE_URL, absoluteUrl } from "@/lib/site"
 
@@ -149,6 +150,7 @@ export default async function HomePage() {
       </main>
 
       <SiteFooter />
+      <FloatingWhatsapp />
     </div>
   )
 }

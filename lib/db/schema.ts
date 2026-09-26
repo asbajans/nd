@@ -90,3 +90,13 @@ export const listings = pgTable("listings", {
 })
 
 export type Listing = typeof listings.$inferSelect
+
+// ---------- Site settings (key-value, admin panelden düzenlenir) ----------
+
+export const siteSettings = pgTable("site_settings", {
+  key: text("key").primaryKey(),
+  value: text("value"),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+})
+
+export type SiteSetting = typeof siteSettings.$inferSelect

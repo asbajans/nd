@@ -4,8 +4,11 @@ import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { UserManager } from "@/components/admin/user-manager"
 import { ListingManager } from "@/components/admin/listing-manager"
+import { SiteSettingsForm } from "@/components/admin/site-settings-form"
 import { getSessionUser } from "@/lib/session"
 import { getAllUsers, getAllListings } from "@/app/actions/admin"
+import { getSiteSetting } from "@/app/actions/settings"
+import { SETTING_WHATSAPP } from "@/lib/settings"
 
 export const dynamic = "force-dynamic"
 export const metadata = { title: "Admin Paneli", robots: { index: false } }
@@ -16,6 +19,7 @@ export default async function AdminPage() {
   if ((user as { role?: string }).role !== "admin") redirect("/panel")
 
   const [users, listings] = await Promise.all([getAllUsers(), getAllListings()])
+  const whatsapp = await getSiteSetting(SETTING_WHATSAPP)
   const pendingUsers = users.filter((u) => !u.approved && u.role !== "admin").length
   const pendingListings = listings.filter((l) => l.status === "pending").length
 
@@ -56,6 +60,13 @@ export default async function AdminPage() {
               İlan Yönetimi
             </h2>
             <ListingManager listings={listings} />
+          </section>
+
+          <section className="mt-10 rounded-2xl border border-border bg-card p-6">
+            <h2 className="mb-4 font-heading text-xl font-extrabold text-card-foreground">
+              Site Ayarları
+            </h2>
+            <SiteSettingsForm initialWhatsapp={whatsapp} />
           </section>
 
           <section className="mt-10">

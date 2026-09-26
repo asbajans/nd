@@ -77,3 +77,9 @@ CREATE INDEX IF NOT EXISTS "user_role_idx" ON "user" ("role");
 CREATE INDEX IF NOT EXISTS "listings_slug_idx" ON "listings" ("slug");
 CREATE INDEX IF NOT EXISTS "listings_status_idx" ON "listings" ("status");
 CREATE INDEX IF NOT EXISTS "listings_userId_idx" ON "listings" ("userId");
+
+CREATE TABLE IF NOT EXISTS "site_settings" (
+  "key" TEXT PRIMARY KEY NOT NULL,
+  "value" TEXT,
+  "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
+);
