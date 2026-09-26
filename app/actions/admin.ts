@@ -41,16 +41,50 @@ export async function setListingStatus(
   status: "approved" | "pending" | "rejected",
 ) {
   await requireAdmin()
-  await db.update(listings).set({ status }).where(eq(listings.id, id))
+  const [row] = await db
+    .select({ slug: listings.slug })
+    .from(listings)
+    .where(eq(listings.id, id))
+    .limit(1)
+  await db
+    .update(listings)
+    .set({ status, updatedAt: new Date() })
+    .where(eq(listings.id, id))
   revalidatePath("/admin")
   revalidatePath("/")
   revalidatePath("/ilanlar")
+
+  // Onaylanan ilanın 6 URL'ini IndexNow ile Bing/Yandex'e anında bildir.
+  // Başarısız olursa sessiz geç (admin işlemini engellemez).
+  if (status === "approved" && row?.slug) {
+    try {
+      const { listingUrls, submitIndexNow } = await import("@/lib/indexnow")
+      await submitIndexNow(listingUrls(row.slug))
+    } catch {
+      /* best-effort */
+    }
+  }
 }
 
 export async function adminDeleteListing(id: number) {
   await requireAdmin()
+  const [row] = await db
+    .select({ slug: listings.slug })
+    .from(listings)
+    .where(eq(listings.id, id))
+    .limit(1)
   await db.delete(listings).where(eq(listings.id, id))
   revalidatePath("/admin")
   revalidatePath("/")
   revalidatePath("/ilanlar")
+
+  // Silinen URL'leri de bildir (motorlar 404'ü görüp dizinden düşer)
+  if (row?.slug) {
+    try {
+      const { listingUrls, submitIndexNow } = await import("@/lib/indexnow")
+      await submitIndexNow(listingUrls(row.slug))
+    } catch {
+      /* best-effort */
+    }
+  }
 }
