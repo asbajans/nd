@@ -38,14 +38,13 @@ services:
       retries: 3
 
   migrate:
-    image: postgres:15-alpine
+    # App imajının içine gömülü /app/database/init.sql çalışır.
+    # (Portainer git stack'lerde ./database gibi kardeş klasör mount'ları boş
+    # geldiği için dosya mount'lu eski yöntem çalışmıyordu.)
+    image: ${APP_IMAGE:-nakliyat-diyari:latest}
     environment:
-      - DB_PASSWORD=${DB_PASSWORD:-db_password}
-      - DB_USER=${DB_USER:-nakliyat_user}
-      - DB_NAME=${DB_NAME:-nakliyat_diyari}
-    volumes:
-      - ./database:/migrations
-    entrypoint: ["sh", "-c", "PGPASSWORD=$DB_PASSWORD psql -h db -U $DB_USER -d $DB_NAME -f /migrations/init.sql"]
+      - DATABASE_URL=postgresql://${DB_USER:-nakliyat_user}:${DB_PASSWORD:-db_password}@db:5432/${DB_NAME:-nakliyat_diyari}
+    entrypoint: ["sh", "-c", "psql \"$DATABASE_URL\" -f /app/database/init.sql"]
     depends_on:
       db:
         condition: service_healthy

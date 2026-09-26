@@ -3,11 +3,24 @@
 import { db } from "@/lib/db"
 import { siteSettings } from "@/lib/db/schema"
 import { requireAdmin } from "@/lib/session"
-import { eq } from "drizzle-orm"
+import { eq, sql } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
+
+// Portainer'daki migrate servisi volume mount sorunu nedeniyle çalışmayabiliyor.
+// Bu yüzden tabloyu uygulama seviyesinde de güvenceye alıyoruz (idempotent).
+async function ensureTable() {
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS "site_settings" (
+      "key" TEXT PRIMARY KEY NOT NULL,
+      "value" TEXT,
+      "updatedAt" TIMESTAMP NOT NULL DEFAULT now()
+    )
+  `)
+}
 
 export async function getSiteSetting(key: string): Promise<string | null> {
   try {
+    await ensureTable()
     const [row] = await db
       .select()
       .from(siteSettings)
@@ -15,13 +28,13 @@ export async function getSiteSetting(key: string): Promise<string | null> {
       .limit(1)
     return row?.value ?? null
   } catch {
-    // Tablo henüz oluşmamışsa (eski DB) sessizce null dön
     return null
   }
 }
 
 export async function setSiteSetting(key: string, value: string | null) {
   await requireAdmin()
+  await ensureTable()
   await db
     .insert(siteSettings)
     .values({ key, value, updatedAt: new Date() })

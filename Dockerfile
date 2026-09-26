@@ -16,6 +16,7 @@ RUN pnpm run build
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+RUN apk add --no-cache postgresql-client
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
