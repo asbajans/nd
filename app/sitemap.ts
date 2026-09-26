@@ -3,8 +3,8 @@ import { getAllPublishedSlugs } from "@/app/actions/listings"
 import { SITE_URL, absoluteUrl } from "@/lib/site"
 import { LISTING_VARIANTS } from "@/lib/listing-variants"
 
-// Sitemap her saat tazelenir (ilan + varyant sayfaları dinamik)
-export const revalidate = 3600
+// Her istekte taze üretilir: yeni/onaylanan ilanlar beklemeden sitemap'e girer
+export const dynamic = "force-dynamic"
 
 function toAbsoluteImage(img: string | null | undefined): string | null {
   if (!img?.trim()) return null

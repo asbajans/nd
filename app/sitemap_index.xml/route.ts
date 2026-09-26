@@ -1,7 +1,7 @@
 import { SITE_URL } from "@/lib/site"
 import sitemap from "@/app/sitemap"
 
-export const revalidate = 3600
+export const dynamic = "force-dynamic"
 
 function escapeXml(s: string): string {
   return s
