@@ -44,7 +44,7 @@ services:
     image: ${APP_IMAGE:-nakliyat-diyari:latest}
     environment:
       - DATABASE_URL=postgresql://${DB_USER:-nakliyat_user}:${DB_PASSWORD:-db_password}@db:5432/${DB_NAME:-nakliyat_diyari}
-    entrypoint: ["sh", "-c", "psql \"$DATABASE_URL\" -f /app/database/init.sql"]
+    entrypoint: ["sh", "-c", "psql \"$$DATABASE_URL\" -f /app/database/init.sql"]
     depends_on:
       db:
         condition: service_healthy
